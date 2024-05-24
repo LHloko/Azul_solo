@@ -1,0 +1,12 @@
+setup.py
+Game_classes_V02.egg-info/PKG-INFO
+Game_classes_V02.egg-info/SOURCES.txt
+Game_classes_V02.egg-info/dependency_links.txt
+Game_classes_V02.egg-info/top_level.txt
+Game_classes_v02/Board.py
+Game_classes_v02/Factories.py
+Game_classes_v02/Player.py
+Game_classes_v02/Saco.py
+Game_classes_v02/States.py
+Game_classes_v02/__init__.py
+Game_classes_v02/main.py
