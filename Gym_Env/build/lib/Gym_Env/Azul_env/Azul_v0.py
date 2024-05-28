@@ -30,7 +30,7 @@ class AzulEnv(gym.Env):
 
         # Define o espaço de observaçao como
         # -2 (local vazio), -1 (sem ceramica), 0:4 (ceramicas postas)
-        self.observation_space = spaces.Box(low=-2, high=4, shape=(1, 100), dtype=int)
+        self.observation_space = spaces.Box(low=-1, high=4, shape=(1, 75), dtype=int)
 
         # Inicializar o estado do ambiente
         self.reset()
@@ -44,17 +44,19 @@ class AzulEnv(gym.Env):
         # Obter o estado atual do jogo
         state = self.estado.get_states()
 
-        factories       = state['fac']
-        factory_floor   = state['fac-flr']
-        ply_bord_01     = state['ply_01']
+        factories       = state['fac']          #20
+        factory_floor   = state['fac-flr']      #15
+        ply_bord_01     = state['ply_01']       #40
         #ply_bord_02     = state['ply_02']
 
         # Processar o estado para criar as observações
-        table = np.concatenate((factories, factory_floor), axis=1)
+        #table = np.concatenate((factories, factory_floor), axis=1)
+        table = np.concatenate((factories, factory_floor, ply_bord_01))
 
-        observations = np.concatenate((table,ply_bord_01), axis = 0) #,ply_bord_02
+        observations = table
+        #observations = np.concatenate((table,ply_bord_01), axis = 0) #,ply_bord_02
 
-        observations = np.ravel(observations)
+        #observations = np.ravel(observations)
 
         return observations
 
@@ -74,17 +76,20 @@ class AzulEnv(gym.Env):
         valid_move = self.players[0].playar(self.fab ,jogada)
 
         # Excede
-        if  not valid_move:
+        if not valid_move:
             truncated = True
             reward -= 10 # Movimento invalido
 
         # Verificar se o turno acabou
         if self.estado.fim_de_turno():
-            reward += self.players.pontuar() # Obter a recompensa do fim do turno
+            reward = self.players[0].pontuar() # Obter a recompensa do fim do turno
             # Verificar se o jogo acabou
             if self.estado.is_game_over():
                 terminated = True
-                reward += self.pontuar_ultimate_final()  # Obter a recompensa do fim do jogo
+                reward = self.estado.fim_de_jogo()  # Obter a recompensa do fim do jogo
+            # senao, reinicia o ambiente
+            else:
+                self.estado.iniciar_turno()
 
         # Atualizar o estado do jogo e retornar a observação, recompensa e sinalizadores de término
         observation = self.observe()
@@ -139,24 +144,50 @@ class AzulEnv(gym.Env):
 
 
 def main():
+
+    '''
     # Crie uma instância do ambiente personalizado
     env = AzulEnv()
-    
+
     # Reinicie o ambiente
     observation, info = env.reset()
     max_steps = 3
 
     print(observation)
     print(info)
-    input()
 
     # Execute uma ação aleatória no ambiente
-    action = env.action_space.sample()
-    observation, reward, terminated, truncated, info = env.step(action)
+    # action = env.action_space.sample()
+    # observation, reward, terminated, truncated, info = env.step(action)
+    terminated = False
 
+    while terminated != True:
+        a = int(input())
+        b = int(input())
+        c = int(input())
+
+        if a == 10:
+            break
+
+        action = [a,b,c]
+        print(action)
+
+        observation, reward, terminated, truncated, info = env.step(action)
+
+        # Imprima informações sobre o passo atual
+        print("Observation:\n", observation)
+        print("Reward:", reward)
+        print("truncated:", truncated)
+        print("terminated:", terminated)
+        print("Info:", info)
+
+
+
+    #
     for step in range(max_steps):
         # Execute uma ação aleatória no ambiente
         action = env.action_space.sample()
+        print(action)
         observation, reward, terminated, truncated, info = env.step(action)
 
         # Imprima informações sobre o passo atual
@@ -170,7 +201,7 @@ def main():
         if truncated or terminated:
             print("Episode finished after {} steps".format(step+1))
             env.reset()
-
+    '''
 
 
 if __name__ == "__main__":

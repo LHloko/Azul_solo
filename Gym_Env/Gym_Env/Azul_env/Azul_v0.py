@@ -30,7 +30,7 @@ class AzulEnv(gym.Env):
 
         # Define o espaço de observaçao como
         # -2 (local vazio), -1 (sem ceramica), 0:4 (ceramicas postas)
-        self.observation_space = spaces.Box(low=-2, high=4, shape=(1, 100), dtype=int)
+        self.observation_space = spaces.Box(low=-1, high=4, shape=(1, 75), dtype=int)
 
         # Inicializar o estado do ambiente
         self.reset()
@@ -44,15 +44,17 @@ class AzulEnv(gym.Env):
         # Obter o estado atual do jogo
         state = self.estado.get_states()
 
-        factories       = state['fac']
-        factory_floor   = state['fac-flr']
-        ply_bord_01     = state['ply_01']
+        factories       = state['fac']          #20
+        factory_floor   = state['fac-flr']      #15
+        ply_bord_01     = state['ply_01']       #40
         #ply_bord_02     = state['ply_02']
 
         # Processar o estado para criar as observações
-        table = np.concatenate((factories, factory_floor), axis=1)
+        #table = np.concatenate((factories, factory_floor), axis=1)
+        table = np.concatenate((factories, factory_floor, ply_bord_01))
 
-        observations = np.concatenate((table,ply_bord_01), axis = 0) #,ply_bord_02
+        observations = table
+        #observations = np.concatenate((table,ply_bord_01), axis = 0) #,ply_bord_02
 
         #observations = np.ravel(observations)
 
@@ -142,9 +144,11 @@ class AzulEnv(gym.Env):
 
 
 def main():
+
+    '''
     # Crie uma instância do ambiente personalizado
     env = AzulEnv()
-    
+
     # Reinicie o ambiente
     observation, info = env.reset()
     max_steps = 3
@@ -179,7 +183,7 @@ def main():
 
 
 
-    '''
+    #
     for step in range(max_steps):
         # Execute uma ação aleatória no ambiente
         action = env.action_space.sample()
