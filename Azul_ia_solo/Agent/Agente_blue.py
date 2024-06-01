@@ -13,7 +13,7 @@ import random
 # Classes proprias
 import Gym_Env
 
-class Blue_agent:
+class Blue_Q_agent:
     def __init__(
             self,
             learning_rate,
@@ -35,6 +35,14 @@ class Blue_agent:
 
     #recebe a observaçao
     def get_action(self, obs):
+        # OK Recortar os 20 primeiros elementos
+        # OK Separar em 5 tuplas de 4 elementos
+        # OK Gerar uma tupla com as fabricas que nao estejam vazias
+            # Sortear um elemento dali para ser a fabrica escolhida
+                # Sortear uma peça ali dentro para ser a peça escolhida
+                    # Criar e chamar uma funçao que retorna as linhas adjacentes
+                    # que podem receber aquela ceramica
+
         # Escolhe uma ação de acordo com a estratégia epsilon-greedy
         if np.random.rand() < self.epsilon:
             # Exploração: escolhe uma ação aleatória
@@ -43,7 +51,59 @@ class Blue_agent:
             # Exploração: escolhe a melhor ação atual com base na tabela Q
             action = np.argmax(self.q_table[obs])
 
+        print('action get_action = ',action)
         return action
+
+    # ???
+
+    '''
+    Entrada: Vetor de observaçao contendo 75 elementos
+    Saida: Uma list contendo quais as fabricas nao vazias 
+    '''
+    def obs_slice_fabs(self, obs):
+        # Recorta os 20 primeiros elementos do vetor de observaçao
+        fabricas = obs[:20]
+
+        # Re-separa as fabricas
+        fabs = [fabricas[i:i+4] for i in range(0, len(fabricas), 4)]
+
+        # Verifica as fabricas nao vazias e armazena seu indice em uma list
+        list_fabs = []
+        for i,fa in enumerate(fabs):
+            if fa[0] != -1:
+                list_fabs.append(i)
+
+        return list_fabs
+
+
+
+    def obs_slice_floor(self, obs):
+
+
+        pass
+
+    def obs_slice_lines(self, obs):
+
+
+        pass
+
+    def slice_fab(self, fabs):
+
+
+        pass
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def update(self,
                obs,
