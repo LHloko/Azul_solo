@@ -14,7 +14,7 @@ from Game_classes_v02 import States
 from Game_classes_v02 import Player
 
 class AzulEnv(gym.Env):
-    metadate = {"render_modes":['ansi']}
+    metadate = {"render_modes":['rgb_array']}
 
     def __init__(self, render_mode = None):
         super(AzulEnv, self).__init__()
@@ -30,7 +30,7 @@ class AzulEnv(gym.Env):
 
         # Define o espaço de observaçao como
         # -2 (local vazio), -1 (sem ceramica), 0:4 (ceramicas postas)
-        self.observation_space = spaces.Box(low=-1, high=4, shape=(1, 75), dtype=int)
+        self.observation_space = spaces.Box(low=-1, high=4, shape=(75,), dtype=int)
 
         # Inicializar o estado do ambiente
         self.reset()
@@ -51,11 +51,12 @@ class AzulEnv(gym.Env):
 
         # Processar o estado para criar as observações
         #table = np.concatenate((factories, factory_floor), axis=1)
+
         table = np.concatenate((factories, factory_floor, ply_bord_01))
 
-        observations = table
-        #observations = np.concatenate((table,ply_bord_01), axis = 0) #,ply_bord_02
+        observations = np.array(table)
 
+        #observations = np.concatenate((table,ply_bord_01), axis = 0) #,ply_bord_02
         #observations = np.ravel(observations)
 
         return observations
@@ -75,25 +76,33 @@ class AzulEnv(gym.Env):
         # Executar a ação no ambiente
         valid_move = self.players[0].playar(self.fab ,jogada)
 
-        # Excede
-        if not valid_move:
-            truncated = True
-            reward -= 10 # Movimento invalido
-
         # Verificar se o turno acabou
         if self.estado.fim_de_turno():
-            reward = self.players[0].pontuar() # Obter a recompensa do fim do turno
+            reward += self.players[0].pontuar() # Obter a recompensa do fim do turno
             # Verificar se o jogo acabou
             if self.estado.is_game_over():
                 terminated = True
-                reward = self.estado.fim_de_jogo()  # Obter a recompensa do fim do jogo
+                reward += self.estado.fim_de_jogo()  # Obter a recompensa do fim do jogo
             # senao, reinicia o ambiente
             else:
                 self.estado.iniciar_turno()
 
+        # Recompensa imediata
+        if action[2] < 5:
+            reward += 1
+        else:
+            reward -= 1
+
         # Atualizar o estado do jogo e retornar a observação, recompensa e sinalizadores de término
         observation = self.observe()
         info = self.get_info()
+
+        # Excede
+        if not valid_move:
+            truncated = True
+            reward = -10 # Movimento invalido
+
+        #self.estado.game_player_status()
 
         return observation, reward, terminated, truncated, info
 
@@ -142,25 +151,47 @@ class AzulEnv(gym.Env):
         # Retornar a observação inicial do ambiente
         return self.observe(), self.get_info()
 
+    def render(self):
+        if self.render_mode == "rgb_array":
+            self.estado.game_player_status()
+
+        pass
+    
+    '''
+    def inst_rwd(self):
+        # verifico se alguma peça foi posta no tabuleiro
+            # somo +1
+        brd = self.players[0].board
+        obs = self.observe()
+        print('obs 0 1  \n',obs)
+
+        # verifico se alguma peça foi posta no piso do tabuleiro
+            # diminuo -1
+        bdr = self.players[0].board
+
+        pass
+    '''
+
+
 
 def main():
-
     '''
     # Crie uma instância do ambiente personalizado
     env = AzulEnv()
 
     # Reinicie o ambiente
     observation, info = env.reset()
-    max_steps = 3
+
 
     print(observation)
     print(info)
 
     # Execute uma ação aleatória no ambiente
-    # action = env.action_space.sample()
-    # observation, reward, terminated, truncated, info = env.step(action)
-    terminated = False
 
+    #action = env.action_space.sample()
+    #observation, reward, terminated, truncated, info = env.step(action)
+
+    terminated = False
     while terminated != True:
         a = int(input())
         b = int(input())
@@ -183,7 +214,9 @@ def main():
 
 
 
-    #
+
+
+   #
     for step in range(max_steps):
         # Execute uma ação aleatória no ambiente
         action = env.action_space.sample()
@@ -200,8 +233,8 @@ def main():
         # Verifique se o episódio terminou
         if truncated or terminated:
             print("Episode finished after {} steps".format(step+1))
-            env.reset()
-    '''
+            env.reset()'''
+
 
 
 if __name__ == "__main__":
